@@ -1,35 +1,45 @@
 import UIKit
 
-/// An edge of a rectangle.
-public enum LayoutEdge {
-    case top
-    case bottom
-    case left
-    case right
+/// One or more edges of a rectangle.
+public struct LayoutEdges: OptionSet {
+
+    public static let top = LayoutEdges(rawValue: 1 << 0)
+    public static let bottom = LayoutEdges(rawValue: 1 << 1)
+    public static let left = LayoutEdges(rawValue: 1 << 2)
+    public static let right = LayoutEdges(rawValue: 1 << 3)
+
+    public static let all: LayoutEdges = [.top, .bottom, .left, .right]
+    public static let horizontal: LayoutEdges = [.left, .right]
+    public static let vertical: LayoutEdges = [.top, .bottom]
+
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
 }
 
-extension Set where Element == LayoutEdge {
-    public static let all: Self = [.top, .bottom, .left, .right]
-    public static let horizontal: Self = [.left, .right]
-    public static let vertical: Self = [.top, .bottom]
-}
-
-/// An edge of a rectangle, taking reading direction into account.
+/// One or more edges of a rectangle, taking reading direction into account.
 ///
 /// For LTR languages (e.g. English), `.leading` is equivalent to left, and `.trailing` is equivalent to right.
 /// For RTL languages (e.g. Arabic) these are reversed.
 ///
-public enum DirectionalLayoutEdge {
-    case top
-    case bottom
-    case leading
-    case trailing
-}
+public struct DirectionalLayoutEdges: OptionSet {
 
-extension Set where Element == DirectionalLayoutEdge {
-    public static let all: Self = [.top, .bottom, .leading, .trailing]
-    public static let horizontal: Self = [.leading, .trailing]
-    public static let vertical: Self = [.top, .bottom]
+    public static let top = DirectionalLayoutEdges(rawValue: 1 << 0)
+    public static let bottom = DirectionalLayoutEdges(rawValue: 1 << 1)
+    public static let leading = DirectionalLayoutEdges(rawValue: 1 << 2)
+    public static let trailing = DirectionalLayoutEdges(rawValue: 1 << 3)
+
+    public static let all: DirectionalLayoutEdges = [.top, .bottom, .leading, .trailing]
+    public static let horizontal: DirectionalLayoutEdges = [.leading, .trailing]
+    public static let vertical: DirectionalLayoutEdges = [.top, .bottom]
+
+    public let rawValue: Int
+
+    public init(rawValue: Int) {
+        self.rawValue = rawValue
+    }
 }
 
 /// A type that participates in auto layout.
@@ -74,7 +84,7 @@ extension LayoutConstrainable {
     ///            The constraints are already active,
     ///            but you may wish to hold references to deactivate or modify them later.
     ///
-    @discardableResult public func constrainEdges(_ edges: Set<LayoutEdge> = .all, to other: LayoutConstrainable, insetBy insets: UIEdgeInsets = .zero) -> [NSLayoutConstraint] {
+    @discardableResult public func constrainEdges(_ edges: LayoutEdges = .all, to other: LayoutConstrainable, insetBy insets: UIEdgeInsets = .zero) -> [NSLayoutConstraint] {
         let constraints = [
             edges.contains(.top) ? topAnchor.constraint(equalTo: other.topAnchor, constant: insets.top) : nil,
             edges.contains(.bottom) ? bottomAnchor.constraint(equalTo: other.bottomAnchor, constant: -insets.bottom) : nil,
@@ -99,7 +109,7 @@ extension LayoutConstrainable {
     ///            The constraints are already active,
     ///            but you may wish to hold references to deactivate or modify them later.
     ///
-    @discardableResult public func constrainEdges(_ edges: Set<LayoutEdge> = .all, to other: LayoutConstrainable, insetBy inset: CGFloat) -> [NSLayoutConstraint] {
+    @discardableResult public func constrainEdges(_ edges: LayoutEdges = .all, to other: LayoutConstrainable, insetBy inset: CGFloat) -> [NSLayoutConstraint] {
         let insets = UIEdgeInsets(top: inset, left: inset, bottom: inset, right: inset)
         return constrainEdges(edges, to: other, insetBy: insets)
     }
@@ -119,7 +129,7 @@ extension LayoutConstrainable {
     ///            but you may wish to hold references to deactivate or modify them later.
     ///
     @available(iOS 11.0, tvOS 11.0, *)
-    @discardableResult public func constrainEdges(_ edges: Set<DirectionalLayoutEdge> = .all, to other: LayoutConstrainable, insetBy insets: NSDirectionalEdgeInsets) -> [NSLayoutConstraint] {
+    @discardableResult public func constrainEdges(_ edges: DirectionalLayoutEdges = .all, to other: LayoutConstrainable, insetBy insets: NSDirectionalEdgeInsets) -> [NSLayoutConstraint] {
         let constraints = [
             edges.contains(.top) ? topAnchor.constraint(equalTo: other.topAnchor, constant: insets.top) : nil,
             edges.contains(.bottom) ? bottomAnchor.constraint(equalTo: other.bottomAnchor, constant: -insets.bottom) : nil,
